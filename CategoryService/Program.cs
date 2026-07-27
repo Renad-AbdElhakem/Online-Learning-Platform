@@ -30,10 +30,7 @@ namespace CategoryService
                     config.Address = new Uri("http://localhost:8500");
                 }));
 
-
-
-
-
+            builder.Services.AddHealthChecks();
 
             builder.Services.AddScoped<ICategoryService, CategoryServices>();
 
@@ -45,13 +42,13 @@ namespace CategoryService
 
             var registration = new AgentServiceRegistration
             {
-                ID = "CategoryServiice-1",
-                Name = "categories",
+                ID = "CategoryService-1",
+                Name = "categoriesService",
                 Address = "localhost",
                 Port = 5136,
                 Check = new AgentServiceCheck
                 {
-                    HTTP = "http://localhost:5136",
+                    HTTP = "http://localhost:5136/health",
                     Interval = TimeSpan.FromSeconds(10),
                     Timeout = TimeSpan.FromSeconds(5),
                     DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)
