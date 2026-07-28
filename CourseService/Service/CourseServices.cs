@@ -20,12 +20,12 @@ namespace CourseService.Service
 
 
 
-        public async Task<string?> CreateNewCourseAsync(RequestNewCourse createNewCourse)
+        public async Task<GeneralResponse<ResponseCourse>> CreateNewCourseAsync(RequestNewCourse createNewCourse)
         {
 
             var category = await _categoryServiceClient.GetCatalogId(createNewCourse.CatelogeId);
             if (category == null)
-                return null;
+                return GeneralResponse<ResponseCourse>.Failed($"category with id {createNewCourse.CatelogeId} not found");
 
             var newCourse = new Course
             {
@@ -40,11 +40,26 @@ namespace CourseService.Service
                 Price = createNewCourse.Price,
 
             };
+          
             await _dBContext.Courses.AddAsync(newCourse);
 
             await _dBContext.SaveChangesAsync();
 
-            return "New course added suscessfuly";
+            var responseCourse = new ResponseCourse
+            {
+                Id=newCourse.Id,
+                Name = createNewCourse.Name,
+                Status = createNewCourse.Status,
+                Description = createNewCourse.Description,
+                Duration = createNewCourse.Duration,
+                CatelogeId = createNewCourse.CatelogeId,
+                CreatedAt = createNewCourse.CreatedAt,
+                IsActive = createNewCourse.IsActive,
+                Level = createNewCourse.Level,
+                Price = createNewCourse.Price,
+
+            };
+            return GeneralResponse<ResponseCourse>.Successful(responseCourse, "New course added suscessfuly");
         }
 
         public async Task<List<ResponseCourse>> GetAllCoursesAsync()
@@ -70,21 +85,21 @@ namespace CourseService.Service
         public async Task<ResponseCourse?> GetCourseByIdAsync(Guid id)
         {
                 return await _dBContext.Courses
-          .Where(c => c.Id == id && c.IsActive == true)
-          .Select(c => new ResponseCourse
-          {
-              Id = c.Id,
-              Name = c.Name,
-              Description = c.Description,
-              Level = c.Level,
-              Price = c.Price,
-              IsActive = c.IsActive,
-              Status = c.Status,
-              CreatedAt = c.CreatedAt,
-              Duration = c.Duration,
-              CatelogeId = c.CatelogeId
-          })
-          .FirstOrDefaultAsync();
+              .Where(c => c.Id == id && c.IsActive == true)
+              .Select(c => new ResponseCourse
+              {
+                  Id = c.Id,
+                  Name = c.Name,
+                  Description = c.Description,
+                  Level = c.Level,
+                  Price = c.Price,
+                  IsActive = c.IsActive,
+                  Status = c.Status,
+                  CreatedAt = c.CreatedAt,
+                  Duration = c.Duration,
+                  CatelogeId = c.CatelogeId
+              })
+              .FirstOrDefaultAsync();
             }
 
         public  async Task<bool> SoftDeleteCourseAsync(Guid id)
@@ -101,12 +116,12 @@ namespace CourseService.Service
             return true;
         }
 
-        public async Task<string?> UpdateCourseAsync(Guid id, RequestUpdateCourse request)
+        public async Task<GeneralResponse<ResponseCourse>> UpdateCourseAsync(Guid id, RequestUpdateCourse request)
         {
             var course = await _dBContext.Courses.FindAsync(id);
 
             if (course == null || course.IsActive == false)
-                return null;
+                return GeneralResponse<ResponseCourse>.Failed($"course not found or not active");
 
             if (request.Name != null)
                 course.Name = request.Name;
@@ -131,7 +146,21 @@ namespace CourseService.Service
 
             await _dBContext.SaveChangesAsync();
 
-            return $"Course with id {id} Updated";
+            var responseCourse = new ResponseCourse
+            {
+                Id = course.Id,
+                Name = course.Name,
+                Status = course.Status,
+                Description = course.Description,
+                Duration = course.Duration,
+                CatelogeId = course.CatelogeId,
+                CreatedAt = course.CreatedAt,
+                IsActive = course.IsActive,
+                Level = course.Level,
+                Price = course.Price,
+
+            };
+            return GeneralResponse<ResponseCourse>.Successful(responseCourse,$"Course with id {id} Updated");
         }
     }
 }

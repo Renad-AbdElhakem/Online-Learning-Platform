@@ -19,8 +19,6 @@ namespace CourseService.ExternalService
         public async Task<string> GetCatalogId(Guid CategoryId)
         {
 
-            //************************
-
             var services = await _consulClient.Health.Service("categoriesService", tag: null, passingOnly: true);
 
             var instance = services.Response.FirstOrDefault();

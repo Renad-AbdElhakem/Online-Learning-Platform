@@ -3,6 +3,8 @@ using CourseService.Dtos;
 using CourseService.ExternalService;
 using CourseService.Model;
 using CourseService.Service;
+using FluentValidation;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
 namespace CourseService.CourseApi
@@ -17,9 +19,21 @@ namespace CourseService.CourseApi
 
 
 
-            group.MapPost("", async (RequestNewCourse createNewCourse, ICourseServices courseServices) =>
+            group.MapPost("", async (RequestNewCourse createNewCourse,IValidator<RequestNewCourse> validator, ICourseServices courseServices) =>
             {
 
+                var validatorReesult = await validator.ValidateAsync(createNewCourse);
+                if (!validatorReesult.IsValid)
+                {
+                    return Results.BadRequest(new
+                    {
+                        errors = validatorReesult.Errors.Select(e => new
+                        {
+                            propertyfield = e.PropertyName,
+                            message = e.ErrorMessage
+                        })
+                    });
+                }
                 var newCourse = await courseServices.CreateNewCourseAsync(createNewCourse);
                 if (newCourse == null)
                     return Results.BadRequest(new { message = $"Category with id {createNewCourse.CatelogeId} not found" });

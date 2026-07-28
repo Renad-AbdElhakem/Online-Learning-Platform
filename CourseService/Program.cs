@@ -1,10 +1,12 @@
 
 using Consul;
+using CourseService.Apis;
 using CourseService.CourseApi;
 using CourseService.Data;
 using CourseService.ExternalService;
 using CourseService.Model;
 using CourseService.Service;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -25,9 +27,13 @@ namespace CourseService
             builder.Services.AddDbContext<CourseDBContext>(option =>
               option.UseSqlServer(builder.Configuration.GetConnectionString("CourseServiceDB")));
 
+            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
             builder.Services.AddHealthChecks();
 
             builder.Services.AddHttpClient<CategoryServiceClient>();
+            builder.Services.AddHttpClient<InstructorServiceClient>();
+
 
             builder.Services.AddSingleton<IConsulClient, ConsulClient>(opt =>
             new ConsulClient(config =>
@@ -36,6 +42,7 @@ namespace CourseService
             }));
 
             builder.Services.AddScoped<ICourseServices, CourseServices>();
+            builder.Services.AddScoped<IInstructorCoursesServices, InstructorCoursesServices>();
 
 
             var app = builder.Build();
@@ -43,7 +50,7 @@ namespace CourseService
 
          
             var consulClient = app.Services.GetRequiredService<IConsulClient>();
-            var registration = new AgentServiceRegistration
+            var courseServiceRegistration = new AgentServiceRegistration
             {
                 ID = "Course-service-1",
                 Name = "CoursesService",
@@ -59,7 +66,7 @@ namespace CourseService
                 }
             };
 
-            consulClient.Agent.ServiceRegister(registration).GetAwaiter().GetResult();
+            consulClient.Agent.ServiceRegister(courseServiceRegistration).GetAwaiter().GetResult();
 
 
             var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
@@ -71,6 +78,7 @@ namespace CourseService
 
             });
 
+        
             app.MapHealthChecks("/health");
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -84,7 +92,9 @@ namespace CourseService
             app.UseAuthorization();
             
             app.MapCourseEndPoint();
-           
+            app.MapInstarctorCoursesEndpoints();
+
+
             app.Run();
         }
     }
