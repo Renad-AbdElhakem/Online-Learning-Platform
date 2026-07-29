@@ -28,7 +28,7 @@ namespace CourseService.ExternalService
 
 
 
-            var url = $"http://{instance.Service.Address}/{instance.Service.Port}/api/instructorcourses/{instructorId}";
+            var url = $"http://{instance.Service.Address}/{instance.Service.Port}/api/instructor/{instructorId}";
 
             var instructorClient = await _httpClient.GetAsync(url);
 

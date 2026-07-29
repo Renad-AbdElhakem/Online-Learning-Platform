@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseService", "CourseServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatewayProject", "GatewayProject\GatewayProject.csproj", "{A962660E-5865-4EC0-813A-096AD9491880}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstructorService", "InstructorService\InstructorService.csproj", "{3EB3399D-AAF2-4D18-869F-5BB146B2E234}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A962660E-5865-4EC0-813A-096AD9491880}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A962660E-5865-4EC0-813A-096AD9491880}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A962660E-5865-4EC0-813A-096AD9491880}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EB3399D-AAF2-4D18-869F-5BB146B2E234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB3399D-AAF2-4D18-869F-5BB146B2E234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EB3399D-AAF2-4D18-869F-5BB146B2E234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EB3399D-AAF2-4D18-869F-5BB146B2E234}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
