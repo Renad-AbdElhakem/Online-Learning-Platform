@@ -27,8 +27,11 @@ namespace GroupsCourseService
 
             builder.Services.AddScoped<IGroupService, GroupService>();
 
+            builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+
             builder.Services.AddHttpClient<CourseClient>();
             builder.Services.AddHttpClient<InstructorClient>();
+            builder.Services.AddHttpClient<StudentClient>();
 
             builder.Services.AddSingleton<IConsulClient, ConsulClient>(opt =>
             new ConsulClient(config =>
@@ -85,7 +88,7 @@ namespace GroupsCourseService
             app.UseAuthorization();
             app.UseHealthChecks("/health");
             app.RegisterRoutes();
-
+            app.MapEnrollmentEndpoints();
 
 
 

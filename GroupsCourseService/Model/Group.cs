@@ -15,5 +15,7 @@
 
         public Guid CourseId { get; set; }
         public Guid InstructorId { get; set; }
+
+        public ICollection<Enrollment>? Enrollments { get; set; }=new List<Enrollment>();
     }
 }

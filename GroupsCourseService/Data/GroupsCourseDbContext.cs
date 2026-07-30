@@ -12,6 +12,7 @@ namespace GroupsCourseService.Data
             
         }
         public DbSet<Group> Groups { get; set; }
+        public DbSet<Enrollment>  Enrollments { get; set; }
 
 
     }
