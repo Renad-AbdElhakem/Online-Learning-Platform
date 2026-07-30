@@ -1,13 +1,13 @@
 
 using Consul;
-using InstructorService.Api;
-using InstructorService.Data;
-using InstructorService.Service;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using StudentService.Api;
+using StudentService.Data;
+using StudentService.Services;
 using System.Threading.Tasks;
 
-namespace InstructorService
+namespace StudentService
 {
     public class Program
     {
@@ -21,35 +21,33 @@ namespace InstructorService
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
-            builder.Services.AddDbContext<InstructorDbContext>(option =>
-            option.UseSqlServer(builder.Configuration.GetConnectionString("InstructorConnection")) );
+            builder.Services.AddDbContext<StudentDbContext>(option =>
+            option.UseSqlServer(builder.Configuration.GetConnectionString("StudentConnection")));
+
+            builder.Services.AddScoped<IStudentServices, StudentServices>();
 
             builder.Services.AddSingleton<IConsulClient, ConsulClient>(opt =>
-                new ConsulClient(config =>
-                {
-                    config.Address = new Uri("http://localhost:8500");
-
-                }));
+            new ConsulClient(config =>
+            {
+                config.Address = new Uri("http://localhost:8500");
+            }) );
 
             builder.Services.AddHealthChecks();
 
-            builder.Services.AddScoped<IInstructorService, InstructorServices>();
-
 
             var app = builder.Build();
-
-
+         
             var consulclient = app.Services.GetRequiredService<IConsulClient>();
 
-            var instructorRegisteration = new AgentServiceRegistration
+            var studentServiceRegisteration = new AgentServiceRegistration
             {
-                ID = "Instructor-Service-1",
-                Name = "InstructorService",
+                ID = "Student-Service-1",
+                Name = "StudentService",
                 Address = "localhost",
-                Port = 5093,
+                Port = 5094,
                 Check = new AgentServiceCheck
                 {
-                    HTTP = "http://localhost:5093/health",
+                    HTTP = "http://localhost:5094/health",
                     Interval = TimeSpan.FromSeconds(10),
                     Timeout = TimeSpan.FromSeconds(5),
                     DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)
@@ -57,16 +55,17 @@ namespace InstructorService
                 }
             };
 
-            await consulclient.Agent.ServiceRegister(instructorRegisteration);
+            await consulclient.Agent.ServiceRegister(studentServiceRegisteration);
 
             var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
             lifetime.ApplicationStopping.Register(async () =>
             {
 
-                await consulclient.Agent.ServiceDeregister("Instructor-Service-1");
+                await consulclient.Agent.ServiceDeregister("Student-Service-1");
 
             });
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -79,8 +78,7 @@ namespace InstructorService
 
             app.UseAuthorization();
             app.UseHealthChecks("/health");
-            app.MapInstructorEndpoint();
-
+            app.MapStudentEndPoints();
             app.Run();
         }
     }

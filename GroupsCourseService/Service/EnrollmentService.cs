@@ -60,6 +60,11 @@ namespace GroupsCourseService.Service
             var group = await _groupService.GetByIdAsync(dto.GroupId);
             if (group is null)
                 GeneralResponse<EnrollmentResponseDto>.failed($"Group  with id {dto.GroupId} not found");
+            
+            if(group.Data.CurrentStudentCount  >= group.Data.NumberOfStudentAllow)
+                GeneralResponse<EnrollmentResponseDto>.failed($"Group with id {dto.GroupId} has reached its maximum student capacity.");
+
+            group.Data.CurrentStudentCount++;
 
             var enrollment = new Enrollment
             {
