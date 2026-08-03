@@ -94,7 +94,9 @@ namespace GroupsCourseService.Service
         public async Task<GeneralResponse<ResponseGroupDto>> GetByIdAsync(Guid id)
         {
             var group = await _context.Groups
-                .FirstOrDefaultAsync(g => g.Id == id);
+                .FirstOrDefaultAsync(g => g.Id == id 
+                                        && g.IsActive 
+                                        && g.Statuts.Contains("Active"));
 
             if (group is null)
                 return GeneralResponse<ResponseGroupDto>
@@ -185,7 +187,7 @@ namespace GroupsCourseService.Service
                 .Succsess(response, "Group status changed to pending.");
         }
 
-        public async Task<GeneralResponse<ResponseGroupDto>> UpdateGroupAssignmentAsync(  Guid id, UpdateGroupAssignmentDto dto)
+        public async Task<GeneralResponse<ResponseGroupDto>> UpdateGroupAssignmentAsync(Guid id, UpdateGroupAssignmentDto dto)
         {
             var group = await _context.Groups
                 .FirstOrDefaultAsync(g => g.Id == id);
@@ -221,7 +223,7 @@ namespace GroupsCourseService.Service
 
 
             await _context.SaveChangesAsync();
-           
+
             var response = new ResponseGroupDto
             {
                 Id = group.Id,
