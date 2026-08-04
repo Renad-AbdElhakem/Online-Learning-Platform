@@ -9,6 +9,7 @@ namespace Content_Service.Service
     {
         Task<GeneralResponse<Lecture>> UploadLectureVideo(UploadNewLecture newLecture);
         Task<GeneralResponse<Lecture>> UpdateLectureAsync(Guid lectureId, UpateLectureDto upateLecture);
+        Task<bool> LectureExistsAsync(Guid lectureId);
         Task<bool> DeleteLecture(Guid lectureId);
         Task<GeneralResponse<byte[]>> DownloadLectureVideo(Guid lectureId);
         Task<GeneralResponse<Stream>> StreamLectureVideo(Guid lectureId);

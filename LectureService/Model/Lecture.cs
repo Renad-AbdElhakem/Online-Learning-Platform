@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Content_Service.Model;
+using Microsoft.AspNetCore.Http;
 
 namespace LectureService.Model
 {
@@ -18,6 +19,6 @@ namespace LectureService.Model
 
         public Guid GroupId { get; set; }
 
-
+        public ICollection<Material> ?Materials { get; set; }= new List<Material>();
     }
 }

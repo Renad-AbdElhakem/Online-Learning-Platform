@@ -1,4 +1,5 @@
-﻿using LectureService.Model;
+﻿using Content_Service.Model;
+using LectureService.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace LectureService.Data
@@ -11,5 +12,6 @@ namespace LectureService.Data
         }
 
         public DbSet<Lecture> Lectures { get; set; }
+        public DbSet<Material>  Materials { get; set; }
     }
 }

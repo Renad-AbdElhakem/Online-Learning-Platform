@@ -19,15 +19,15 @@ namespace Content_Service.Api
                 return result.IsSuccseded ? Results.Ok(result) : Results.BadRequest(result.Message);
 
 
-            }).DisableAntiforgery(); ;
+            }).DisableAntiforgery(); 
 
 
-            group.MapPatch("{lectureId}", async (Guid lectureId, UpateLectureDto upateLecture, ILectureService lectureService) =>
+            group.MapPatch("{lectureId}", async (Guid lectureId, [FromForm]UpateLectureDto upateLecture, ILectureService lectureService) =>
             {
                 var result = await lectureService.UpdateLectureAsync(lectureId, upateLecture);
               
                 return result.IsSuccseded? Results.Ok(result): Results.NotFound(result.Message) ;
-            });
+            }).DisableAntiforgery();
 
 
 

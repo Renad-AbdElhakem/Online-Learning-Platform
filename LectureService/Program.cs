@@ -27,6 +27,7 @@ namespace LectureService
             option.UseSqlServer(builder.Configuration.GetConnectionString("ContentServiceDB")));
 
             builder.Services.AddScoped<ILectureService, LectureServices>();
+            builder.Services.AddScoped<IMaterialService, MaterialService>();
 
             builder.Services.AddHttpClient<GroupClient>();
 
@@ -91,6 +92,8 @@ namespace LectureService
             app.UseAntiforgery();
             app.UseHealthChecks("/health");
             app.MapLectureEndPoint();
+            app.MapMaterialEndPoints();
+
             app.Run();
         }
     }

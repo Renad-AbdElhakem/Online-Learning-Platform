@@ -6,6 +6,7 @@ using LectureService.Data;
 using LectureService.Dtos;
 using LectureService.Model;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace LectureService.Service
 {
@@ -29,11 +30,7 @@ namespace LectureService.Service
                 return GeneralResponse<Lecture>.Failed("No file received.");
             }
 
-
-            var allowedExtension = new[] { ".mp4" };
-            var extension = Path.GetExtension(newLecture.VideoLecture.FileName).ToLowerInvariant();
-
-            if (!allowedExtension.Contains(extension))
+            if (!IsAllowedExtension(newLecture.VideoLecture))
             {
                 return GeneralResponse<Lecture>.Failed("file type not allowed");
             }
@@ -91,6 +88,8 @@ namespace LectureService.Service
 
                 lecture.GroupId = upateLecture.GroupId.Value;
             }
+
+            lecture.ModifiedAt = DateTime.Now;
             await _dbContext.SaveChangesAsync();
 
             return GeneralResponse<Lecture>.Success(lecture, "Updated successfully.");
@@ -106,7 +105,11 @@ namespace LectureService.Service
             return true;
         }
 
-
+        public async Task<bool> LectureExistsAsync(Guid lectureId)
+        {
+            return await _dbContext.Lectures
+                                 .AnyAsync(l => l.Id == lectureId);
+        }
 
         public async Task<GeneralResponse<byte[]>> DownloadLectureVideo(Guid lectureId)
         {
@@ -136,13 +139,27 @@ namespace LectureService.Service
 
 
 
+        private bool IsAllowedExtension(IFormFile file) 
+        {
+
+            var allowedExtension = new[] { ".mp4" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!allowedExtension.Contains(extension))
+            {
+               return false;
+            }
+
+            return true;
+        }
+
         private async Task<string> SaveLectureVideoAsync(IFormFile videoLecture, string lectureName)
         {
             var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "VideoLectures");
 
             Directory.CreateDirectory(folderPath);
 
-            var fileName = $"{Guid.NewGuid()}_{lectureName}_{Path.GetExtension(videoLecture.FileName)}";
+            var fileName = $"{Guid.NewGuid()}_{lectureName}{Path.GetExtension(videoLecture.FileName)}";
 
             var videoFilePath = Path.Combine(folderPath, fileName);
 
