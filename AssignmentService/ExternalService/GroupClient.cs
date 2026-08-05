@@ -1,8 +1,7 @@
-﻿using Consul;
-using Content_Service.Model;
-using System.Threading.Tasks;
+﻿using AssignmentService.Shared;
+using Consul;
 
-namespace Content_Service.ExternalService
+namespace AssignmentService.ExternalService
 {
     public class GroupClient
     {
@@ -19,14 +18,14 @@ namespace Content_Service.ExternalService
         public async Task<GeneralResponse<string>> GetByIdAsync(Guid groupId)
         {
 
-            var service = await _consul.Health.Service("GroupService", passingOnly: true, tag: null);
+            var service = await _consul.Health.Service("GroupsService", passingOnly: true, tag: null);
 
             var instance = service.Response.FirstOrDefault();
 
-        
+            
             var url = $"http://{instance.Service.Address}:{instance.Service.Port}/api/Groups/{groupId}";
 
-            var groupClient=  await _httpClient.GetAsync(url);
+            var groupClient = await _httpClient.GetAsync(url);
 
             try
             {

@@ -9,7 +9,7 @@ namespace GroupsCourseService.Api
         public static void RegisterRoutes(this WebApplication app)
         {
 
-            var group = app.MapGroup("/api/Groups/");
+            var group = app.MapGroup("/api/Groups");
 
             group.MapPost("", async (RequestCreateNewGroup newGroup, IGroupService groupService) =>
             {
