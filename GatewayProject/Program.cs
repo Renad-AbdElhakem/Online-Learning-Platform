@@ -1,5 +1,7 @@
 
 using Consul;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Yarp.ReverseProxy.ServiceDiscovery;
 
 namespace GatewayProject
@@ -28,8 +30,194 @@ namespace GatewayProject
             builder.Services.AddSingleton<IDestinationResolver, ConsulDestinationResolver>();
 
 
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Category-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 150,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 50,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Course-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 120,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 40,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("InstructorCourse-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 120,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 40,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Instructor-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 120,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 40,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Group-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 100,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 30,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Student-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 100,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 20,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
+
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Enrollment-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 80,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 20,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Lecture-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 60,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 20,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Material-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 50,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 10,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Assignment-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 30,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 5,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("StudentAssignment-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 10,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 3,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             builder.Services.AddReverseProxy()
-                .LoadFromConfig(builder.Configuration.GetSection(""));
+                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
             var app = builder.Build();
 
