@@ -15,26 +15,26 @@ namespace GatewayProject
         }
 
         public async ValueTask<ResolvedDestinationCollection> ResolveDestinationsAsync
-            (IReadOnlyDictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig> destinations, CancellationToken cancellationToken)
+    (IReadOnlyDictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig> destinations, CancellationToken cancellationToken)
         {
             var resolved = new Dictionary<string, Yarp.ReverseProxy.Configuration.DestinationConfig>();
 
+
+            var allServices = await _consulClient.Agent.Services();
+
             foreach (var (key, config) in destinations)
             {
-                
-                var services = await _consulClient.Health.Service(
-                    config.Host!,
-                    tag: null,
-                    passingOnly: true,
-                    cancellationToken
-                );
 
-                foreach (var service in services.Response)
+                var matchedServices = allServices.Response.Values
+                    .Where(s => s.Service.Equals(config.Address,
+                           StringComparison.OrdinalIgnoreCase));
+
+                foreach (var service in matchedServices)
                 {
-                    var address = service.Service.Address;
-                    var port = service.Service.Port;
+                    var address = service.Address;
+                    var port = service.Port;
+                    Console.WriteLine($"Resolved: {config.Address} → {address}:{port}");
                     var destKey = $"{key}_{address}_{port}";
-
                     resolved[destKey] = config with
                     {
                         Address = $"http://{address}:{port}"
@@ -43,34 +43,10 @@ namespace GatewayProject
             }
 
             return new ResolvedDestinationCollection(
-                          resolved,
-                          NullChangeToken.Singleton
-                      );
+                resolved,
+                NullChangeToken.Singleton
+            );
         }
+
     }
 }
-/*
- * Key
-
-catalog
-
-↓
-
-Value
-
-Host = CatalogService
-
- "Clusters": {
-  "catalog-cluster": {
-    "Destinations": {
-      "catalog1": {
-        "Host": "CatalogService"
-      },
-      "catalog2": {
-        "Host": "CatalogService"
-      }
-    }
-  }
-}
-
- */

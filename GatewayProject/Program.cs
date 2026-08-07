@@ -1,6 +1,9 @@
 
 using Consul;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.RateLimiting;
 using Yarp.ReverseProxy.ServiceDiscovery;
 
@@ -12,11 +15,14 @@ namespace GatewayProject
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddAuthorization();
+            
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            builder.Services.AddSingleton<IDestinationResolver, ConsulDestinationResolver>();
+
+            builder.Services.AddAuthorization();
 
 
             builder.Services.AddSingleton<IConsulClient, ConsulClient>(opt =>
@@ -27,7 +33,24 @@ namespace GatewayProject
 
                 );
 
-            builder.Services.AddSingleton<IDestinationResolver, ConsulDestinationResolver>();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(option =>
+            {
+                option.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["jwt:Issuer"],
+                    ValidAudience = builder.Configuration["jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["jwt:SecurityKey"]!))
+                      
+                };
+            });
+
+          
 
 
             builder.Services.AddRateLimiter(option =>
@@ -194,25 +217,33 @@ namespace GatewayProject
                 option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             });
 
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("UserAuth-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 5,
+                    ReplenishmentPeriod = TimeSpan.FromHours(5),
+                    TokensPerPeriod = 2,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            builder.Services.AddRateLimiter(option =>
+            {
+                option.AddPolicy("Role-per-user", httpcontext =>
+                RateLimitPartition.GetTokenBucketLimiter(partitionKey: httpcontext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "annonymous",
+                factory: _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = 100,
+                    ReplenishmentPeriod = TimeSpan.FromHours(1),
+                    TokensPerPeriod = 40,
+                    QueueLimit = 0
+                }));
+                option.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
 
 
 
@@ -225,11 +256,13 @@ namespace GatewayProject
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
+            app.UseRateLimiter();
             app.MapReverseProxy();
 
 

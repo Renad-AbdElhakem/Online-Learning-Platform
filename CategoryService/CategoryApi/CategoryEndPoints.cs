@@ -1,4 +1,5 @@
 ﻿using CategoryService.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CategoryService.EndPoints
 {
@@ -11,12 +12,17 @@ namespace CategoryService.EndPoints
 
             var group = app.MapGroup("/api/categories/");
 
+       
             group.MapPost("", async (string categoryName, ICategoryService categoryService) =>
             {
                 var newCategoryCourse = await categoryService.CreateNewCategoryCourse(categoryName);
                 return newCategoryCourse != null ? Results.Ok(newCategoryCourse) : Results.BadRequest();
 
-            });
+            }).RequireAuthorization(new AuthorizeAttribute
+            {
+                Roles = "Admin"
+            }); 
+
             group.MapGet("/{categoryId}", async (Guid categoryId, ICategoryService categoryService) =>
             {
                 var category = await categoryService.GetCategoryById(categoryId);
@@ -29,6 +35,9 @@ namespace CategoryService.EndPoints
                 var categoryList = await categoryService.GetAllCategory();
                 return Results.Ok(categoryList);
 
+            }).RequireAuthorization(new AuthorizeAttribute
+            {
+                Roles = "Admin"
             });
 
 

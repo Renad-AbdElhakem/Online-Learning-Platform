@@ -3,14 +3,18 @@ using CategoryService.Data;
 using CategoryService.EndPoints;
 using CategoryService.Services;
 using Consul;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CategoryService
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +26,28 @@ namespace CategoryService
 
             builder.Services.AddDbContext<CategoryDbContext>(option =>
                 option.UseSqlServer(builder.Configuration.GetConnectionString("CategoryServiceDB")));
+
+
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(option =>
+            {
+                option.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["jwt:Issuer"],
+                    ValidAudience = builder.Configuration["jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["jwt:SecurityKey"]!))
+                };
+            });
+
+
+
+
 
             //1- Add localhost (location) to regist at  
             builder.Services.AddSingleton<IConsulClient, ConsulClient>(p =>
@@ -57,17 +83,17 @@ namespace CategoryService
 
             };
 
-            consulClient.Agent.ServiceRegister(registration).GetAwaiter().GetResult();
+          await  consulClient.Agent.ServiceRegister(registration);
 
 
             //3- Deregister on Shutdown
 
             var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
-            lifetime.ApplicationStopping.Register(() =>
+            lifetime.ApplicationStopping.Register(async () =>
             {
 
-                consulClient.Agent.ServiceDeregister("CategoryServiice-1").GetAwaiter().GetResult();
+               await consulClient.Agent.ServiceDeregister("CategoryServiice-1");
 
             });
 
@@ -82,6 +108,7 @@ namespace CategoryService
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapCategoryEndPoints();
 
